@@ -249,7 +249,7 @@ export default function FilmDetailPage() {
                     <h3 className="heading-3">Delete Film</h3>
                   </div>
                   <p className="text-neutral-600 mb-6">
-                    Are you sure you want to delete "{film.title}"? This action cannot be undone.
+                    Are you sure you want to delete &quot;{film.title}&quot;? This action cannot be undone.
                   </p>
                   <div className="flex gap-3 justify-end">
                     <button

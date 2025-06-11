@@ -26,6 +26,18 @@ export function InlineEdit({
   const [isSaving, setIsSaving] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Auto-resize textarea and focus when editing starts - MOVED BEFORE EARLY RETURN
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      const textarea = textareaRef.current
+      textarea.focus()
+      
+      // Auto-resize
+      textarea.style.height = 'auto'
+      textarea.style.height = textarea.scrollHeight + 'px'
+    }
+  }, [isEditing])
+
   // Don't show edit functionality if not logged in
   if (!user) {
     return <p className={className}>{content}</p>
@@ -71,18 +83,6 @@ export function InlineEdit({
       handleCancel()
     }
   }
-
-  // Auto-resize textarea and focus when editing starts
-  useEffect(() => {
-    if (isEditing && textareaRef.current) {
-      const textarea = textareaRef.current
-      textarea.focus()
-      
-      // Auto-resize
-      textarea.style.height = 'auto'
-      textarea.style.height = textarea.scrollHeight + 'px'
-    }
-  }, [isEditing])
 
   if (isEditing) {
     return (
