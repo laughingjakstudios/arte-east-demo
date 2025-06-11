@@ -3,15 +3,44 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { InlineEdit } from '@/components/InlineEdit'
-import { getContent } from '@/lib/database'
+import { getContent, getFilms } from '@/lib/database'
+import { useAuth } from '@/contexts/AuthContext'
+import type { Film } from '@/types'
 
 export default function Home() {
+  const { user } = useAuth()
   const [contentData, setContentData] = useState<Record<string, string>>({})
+  const [films, setFilms] = useState<Film[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadContent()
+    loadFilms()
+    // Clean up URL tokens after authentication
+    cleanupUrl()
   }, [])
+
+  const cleanupUrl = () => {
+    // Remove authentication tokens from URL
+    if (window.location.hash.includes('access_token')) {
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }
+
+  const loadFilms = async () => {
+    try {
+      const result = await getFilms()
+      if (result.data) {
+        // Show only published films, limit to 6 for homepage
+        const publishedFilms = result.data
+          .filter(film => film.status === 'published')
+          .slice(0, 6)
+        setFilms(publishedFilms)
+      }
+    } catch (error) {
+      console.error('Error loading films:', error)
+    }
+  }
 
   const loadContent = async () => {
     try {
@@ -70,6 +99,14 @@ export default function Home() {
     }))
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
@@ -115,7 +152,7 @@ export default function Home() {
               {/* Feature Grid */}
               <div className="grid md:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -127,7 +164,7 @@ export default function Home() {
                 </div>
                 
                 <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -139,26 +176,26 @@ export default function Home() {
                 </div>
                 
                 <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 rounded-full bg-warning-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div>
                     <p className="font-medium text-neutral-900">Film Management</p>
-                    <p className="text-sm text-neutral-500">CRUD operations in progress</p>
+                    <p className="text-sm text-neutral-500">CRUD operations complete</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 rounded-full bg-warning-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-medium text-neutral-900">Authentication</p>
-                    <p className="text-sm text-neutral-500">Google OAuth integration planned</p>
+                    <p className="font-medium text-neutral-900">Authentication</p>  
+                    <p className="text-sm text-neutral-500">Google OAuth active</p>
                   </div>
                 </div>
               </div>
@@ -171,6 +208,43 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Films Section */}
+          {films.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="heading-2">Recent Films</h2>
+                <Link href="/films" className="text-blue-600 hover:text-blue-700 font-medium">
+                  View All →
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {films.map((film) => (
+                  <div key={film.id} className="card hover:shadow-medium transition-shadow">
+                    <div className="card-body">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="heading-3 text-left">
+                          <Link 
+                            href={`/films/${film.id}`}
+                            className="text-neutral-900 hover:text-blue-600 transition-colors"
+                          >
+                            {film.title}
+                          </Link>
+                        </h3>
+                        <span className="badge-published">published</span>
+                      </div>
+                      <p className="text-neutral-600 text-sm mb-3 text-left line-clamp-3">
+                        {film.description}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        {formatDate(film.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Preview Cards */}
           <div className="grid md:grid-cols-2 gap-6">
