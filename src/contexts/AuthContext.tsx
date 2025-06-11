@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session)
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
@@ -30,7 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, session)
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
@@ -40,12 +42,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
+    const isProduction = process.env.NODE_ENV === 'production'
+    const redirectTo = isProduction 
+      ? 'https://arte-east-demo.vercel.app/'
+      : window.location.origin + '/'
+    
+    console.log('Environment:', process.env.NODE_ENV)
+    console.log('Window origin:', window.location.origin)
+    console.log('Signing in with redirect to:', redirectTo)
+      
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
       }
     })
+    
+    if (error) {
+      console.error('Auth error:', error)
+    }
   }
 
   const signOut = async () => {

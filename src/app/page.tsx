@@ -16,13 +16,24 @@ export default function Home() {
   useEffect(() => {
     loadContent()
     loadFilms()
-    // Clean up URL tokens after authentication
-    cleanupUrl()
   }, [])
 
+  // Clean up URL tokens after user auth state is determined
+  useEffect(() => {
+    console.log('Page useEffect - user state:', user)
+    console.log('Current URL hash:', window.location.hash)
+    
+    if (user !== undefined) { // undefined means still loading, null means not logged in, user object means logged in
+      console.log('User state determined, cleaning up URL')
+      cleanupUrl()
+    }
+  }, [user])
+
   const cleanupUrl = () => {
-    // Remove authentication tokens from URL
+    // Remove authentication tokens from URL after auth is processed
+    console.log('cleanupUrl called, hash contains access_token:', window.location.hash.includes('access_token'))
     if (window.location.hash.includes('access_token')) {
+      console.log('Cleaning up URL hash')
       window.history.replaceState({}, document.title, window.location.pathname)
     }
   }
