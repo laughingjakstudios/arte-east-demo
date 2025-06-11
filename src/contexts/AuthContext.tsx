@@ -38,7 +38,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Handle hash-based auth (for OAuth redirects)
+    const handleHashChange = () => {
+      if (window.location.hash.includes('access_token')) {
+        console.log('Hash contains access token, triggering session refresh')
+        supabase.auth.getSession()
+      }
+    }
+    
+    // Check hash on mount
+    handleHashChange()
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('hashchange', handleHashChange)
+    }
   }, [])
 
   const signInWithGoogle = async () => {

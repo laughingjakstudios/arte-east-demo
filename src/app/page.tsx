@@ -23,9 +23,19 @@ export default function Home() {
     console.log('Page useEffect - user state:', user)
     console.log('Current URL hash:', window.location.hash)
     
-    if (user !== undefined) { // undefined means still loading, null means not logged in, user object means logged in
-      console.log('User state determined, cleaning up URL')
+    // Only clean up if we have a confirmed user session OR after a delay to let Supabase process
+    if (user) {
+      console.log('User authenticated, cleaning up URL')
       cleanupUrl()
+    } else if (user === null && window.location.hash.includes('access_token')) {
+      // If user is null but we have tokens, wait a bit for Supabase to process
+      console.log('User null but tokens present, waiting before cleanup')
+      const timeout = setTimeout(() => {
+        console.log('Timeout reached, cleaning up URL')
+        cleanupUrl()
+      }, 3000) // 3 second delay
+      
+      return () => clearTimeout(timeout)
     }
   }, [user])
 
